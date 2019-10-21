@@ -21,6 +21,7 @@ func main() {
 }
 
 func initData() {
+	log.Println("Initializing data..")
 	content, err := ioutil.ReadFile("koatuu.json")
 	if err != nil {
 		return
@@ -47,6 +48,7 @@ func getLocalities(data []interface{}, currentLevel int) {
 }
 
 func startServer() {
+	log.Println("Starting server..")
 	http.HandleFunc("/locality", func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Request URI: %v\n", r.URL.RequestURI())
 		w.Header().Set("Content-Type", "application/json")
