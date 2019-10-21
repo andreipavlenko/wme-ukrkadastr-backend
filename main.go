@@ -67,5 +67,5 @@ func startServer() {
 		}
 		w.Write([]byte("{}"))
 	})
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(http.ListenAndServe(":7979", nil))
 }
