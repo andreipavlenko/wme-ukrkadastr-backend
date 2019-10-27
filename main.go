@@ -9,8 +9,9 @@ import (
 )
 
 type localitiy struct {
-	Name string `json:"name"`
-	Code string `json:"code"`
+	Name       string `json:"name"`
+	Code       string `json:"code"`
+	ZoneNumber string `json:"zone_number"`
 }
 
 var localities = map[string]string{}
@@ -52,13 +53,15 @@ func startServer() {
 	http.HandleFunc("/locality", func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Request URI: %v\n", r.URL.RequestURI())
 		w.Header().Set("Content-Type", "application/json")
-		code, ok := r.URL.Query()["code"]
-		if ok {
-			l, ok := localities[code[0]]
-			if ok {
+		code, okCode := r.URL.Query()["code"]
+		zoneNumber, okZn := r.URL.Query()["zone_number"]
+		if okCode && okZn {
+			name := getLocalityName(code[0], zoneNumber[0])
+			if name != "" {
 				res := localitiy{
-					Name: l,
-					Code: code[0],
+					Name:       name,
+					Code:       code[0],
+					ZoneNumber: zoneNumber[0],
 				}
 				js, err := json.Marshal(res)
 				if err == nil {
@@ -70,4 +73,20 @@ func startServer() {
 		w.Write([]byte("{}"))
 	})
 	log.Fatal(http.ListenAndServe(":7979", nil))
+}
+
+func getLocalityName(koatuu, zoneNumber string) string {
+	if len(koatuu) < len(zoneNumber) {
+		return ""
+	}
+	koatuuWithZone := koatuu[:len(koatuu)-len(zoneNumber)] + zoneNumber
+	name, ok := localities[koatuuWithZone]
+	if ok {
+		return name
+	}
+	name, ok = localities[koatuu]
+	if ok {
+		return name
+	}
+	return ""
 }
