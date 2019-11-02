@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
 )
 
 type localitiy struct {
@@ -54,28 +55,8 @@ func getLocalities(data []interface{}, currentLevel int) {
 
 func startServer() {
 	log.Println("Starting server..")
-	http.HandleFunc("/locality", func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("Request URI: %v\n", r.URL.RequestURI())
-		w.Header().Set("Content-Type", "application/json")
-		code, okCode := r.URL.Query()["code"]
-		zoneNumber, okZn := r.URL.Query()["zone_number"]
-		if okCode && okZn {
-			name := getLocalityName(code[0], zoneNumber[0])
-			if name != "" {
-				res := localitiy{
-					Name:       name,
-					Code:       code[0],
-					ZoneNumber: zoneNumber[0],
-				}
-				js, err := json.Marshal(res)
-				if err == nil {
-					w.Write(js)
-					return
-				}
-			}
-		}
-		w.Write([]byte("{}"))
-	})
+	http.HandleFunc("/locality", handleLocalityReq)
+	http.HandleFunc("/kadastr", handleKadastrReq)
 	log.Fatal(http.ListenAndServe(":7979", nil))
 }
 
@@ -93,4 +74,56 @@ func getLocalityName(koatuu, zoneNumber string) string {
 		return name
 	}
 	return ""
+}
+
+func handleLocalityReq(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	log.Printf("Request URI: %v\n", r.URL.RequestURI())
+	w.Header().Set("Content-Type", "application/json")
+	code, okCode := r.URL.Query()["code"]
+	zoneNumber, okZn := r.URL.Query()["zone_number"]
+	if okCode && okZn {
+		name := getLocalityName(code[0], zoneNumber[0])
+		if name != "" {
+			res := localitiy{
+				Name:       name,
+				Code:       code[0],
+				ZoneNumber: zoneNumber[0],
+			}
+			js, err := json.Marshal(res)
+			if err == nil {
+				w.Write(js)
+				return
+			}
+		}
+	}
+	w.Write([]byte("{}"))
+}
+
+func handleKadastrReq(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Content-Type", "application/json")
+	r.ParseForm()
+	req, err := http.NewRequest("POST", "https://newmap.land.gov.ua/mapi/get-object-info", strings.NewReader(r.PostForm.Encode()))
+	if err != nil {
+		w.Write([]byte("{}"))
+		return
+	}
+	req.Host = "newmap.land.gov.ua"
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		w.Write([]byte("{}"))
+		return
+	}
+	defer resp.Body.Close()
+
+	f, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		w.Write([]byte("{}"))
+		return
+	}
+	w.Write(f)
 }
