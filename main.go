@@ -16,6 +16,8 @@ type localitiy struct {
 
 var localities = map[string]string{}
 
+var localitiesCount = 0
+
 func main() {
 	initData()
 	startServer()
@@ -33,6 +35,7 @@ func initData() {
 		return
 	}
 	getLocalities(data["level1"].([]interface{}), 1)
+	log.Printf("%v localitites initialized.\n", localitiesCount)
 }
 
 func getLocalities(data []interface{}, currentLevel int) {
@@ -40,6 +43,7 @@ func getLocalities(data []interface{}, currentLevel int) {
 		value := v.(map[string]interface{})
 		code, name := value["code"].(string), value["name"].(string)
 		localities[code] = name
+		localitiesCount++
 		nextLevelIndex := fmt.Sprintf("level%v", currentLevel+1)
 		nextLevel, ok := value[nextLevelIndex]
 		if ok {
