@@ -103,6 +103,7 @@ func handleLocalityReq(w http.ResponseWriter, r *http.Request) {
 func handleKadastrReq(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Content-Type", "application/json")
+	log.Println("Received kadastr request")
 	r.ParseForm()
 	req, err := http.NewRequest("POST", "https://newmap.land.gov.ua/mapi/get-object-info", strings.NewReader(r.PostForm.Encode()))
 	if err != nil {
@@ -116,6 +117,7 @@ func handleKadastrReq(w http.ResponseWriter, r *http.Request) {
 	resp, err := client.Do(req)
 	if err != nil {
 		w.Write([]byte("{}"))
+		log.Println("Failed to make request to kadastr")
 		return
 	}
 	defer resp.Body.Close()
