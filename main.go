@@ -105,7 +105,7 @@ func handleKadastrReq(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	log.Println("Received kadastr request")
 	r.ParseForm()
-	req, err := http.NewRequest("POST", "https://newmap.land.gov.ua/mapi/get-object-info", strings.NewReader(r.PostForm.Encode()))
+	req, err := http.NewRequest("POST", "https://map.land.gov.ua/mapi/get-object-info", strings.NewReader(r.PostForm.Encode()))
 	if err != nil {
 		w.Write([]byte("{}"))
 		return
