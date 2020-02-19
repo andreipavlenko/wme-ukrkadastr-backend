@@ -110,7 +110,7 @@ func handleKadastrReq(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("{}"))
 		return
 	}
-	req.Host = "newmap.land.gov.ua"
+	req.Host = "map.land.gov.ua"
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
 	client := &http.Client{}
